@@ -42,7 +42,8 @@ The program will search for all files ending in ".gpx", and for each one, genera
 
 ```
 $ cd $location_of_gpx_files
-$ 1.gpx 2.gpx 3.gpx
+$ ls
+1.gpx 2.gpx 3.gpx
 $ gps2HtmlReport
 Processing 3 file(s)...
 Processing '1.gpx' complete. Report saved in: /home/foo/gps_tracks/1/index.html
