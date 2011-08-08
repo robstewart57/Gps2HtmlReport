@@ -1,0 +1,22 @@
+Name:                gps2htmlReport
+Version:             0.1
+Cabal-Version:       >=1.2
+Description:         Generate a HTML summary report of GPS tracks
+synopsis:            GPS HTML Report Summary
+License:             GPL
+License-file:        LICENSE
+Extra-Source-Files:  README
+Author:              Rob Stewart <robstewart57@googlemail.com>
+Maintainer:          Rob Stewart <robstewart57@googlemail.com>
+Build-Type:          Simple
+stability:	     Experimental
+extra-source-files:  README.md
+tested-with:         GHC ==7.0.2
+
+Executable gps2htmlReport
+  Main-is:	       Gps2HtmlReport/Main.hs
+
+library
+  Build-Depends:     base >= 4, html, gps, time, cairo, Chart, random, data-accessor, colour, xsd, filepath, directory, process, gd
+  Extensions:        ScopedTypeVariables
+  Exposed-Modules:   Gps2HtmlReport.HTMLGenerator, Gps2HtmlReport.JourneyStats, Gps2HtmlReport.JourneyCharts, Gps2HtmlReport.OsmChart
