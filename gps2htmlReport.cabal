@@ -3,7 +3,7 @@ Version:             0.1
 Cabal-Version:       >=1.2
 Description:         Generate a HTML summary report of GPS tracks
 synopsis:            GPS HTML Report Summary
-License:             GPL
+License:             BSD3
 License-file:        LICENSE
 Extra-Source-Files:  README
 Author:              Rob Stewart <robstewart57@googlemail.com>
