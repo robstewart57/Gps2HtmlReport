@@ -11,6 +11,8 @@ Included in the report:
 
 A few examples can be seen [HERE](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/).
 
+The Haddock documentation pages can be found [here](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/doc/).
+
 Installation
 ------------
 It is assumed that you have the Haskell Platform installed.
