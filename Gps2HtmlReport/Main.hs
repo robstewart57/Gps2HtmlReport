@@ -1,15 +1,8 @@
 module Main where
 
 import Data.GPS
-import qualified Graphics.Rendering.Cairo as C
-import Graphics.Rendering.Chart
-import Graphics.Rendering.Chart.Simple
-import Graphics.Rendering.Chart.Gtk
-import Graphics.Rendering.Chart.Grid
 import System.FilePath
 import System.Directory
-import System.Process
-import System.Environment
 import Text.Html
 
 import Gps2HtmlReport.OsmChart
@@ -22,7 +15,7 @@ main = do
    curDir <- getCurrentDirectory
    allFiles <- getDirectoryContents curDir
    let allFilesSplit = map splitExtension allFiles
-   let gpxFiles = filter (\(a,b) -> b==".gpx") allFilesSplit
+   let gpxFiles = filter (\(_,b) -> b==".gpx") allFilesSplit
    putStr ("Processing "++show (length gpxFiles)++" file(s)...\n")
    mapM (\(a,b) -> generateReport (curDir++"/"++a) (a++b)) gpxFiles
 
@@ -36,10 +29,13 @@ createEmptyDir dir = do
 generateReport :: FilePath -> FilePath -> IO ()
 generateReport webDir gpxFile  = do
          points <- readGPX gpxFile
-         createEmptyDir webDir
-         renderToPng (chart1 points) (webDir++"/chart1.png")
-         renderToPng (chart2 points) (webDir++"/chart2.png")
-         writeFile (webDir++"/index.html") $ renderHtml $ generateHtmlPage points
-         createOsmMap webDir gpxFile
-         putStr $ "Processing '"++gpxFile++"' complete. Report saved in: "++webDir++"/index.html\n"
-         return ()
+         case length points of
+          0 -> putStr "Unable to parse GPX file. Skipping..."
+          otherwise -> do
+           createEmptyDir webDir
+           renderToPng (chart1 points) (webDir++"/chart1.png")
+           renderToPng (chart2 points) (webDir++"/chart2.png")
+           writeFile (webDir++"/index.html") $ renderHtml $ generateHtmlPage points
+           createOsmMap webDir gpxFile
+           putStr $ "Processing '"++gpxFile++"' complete. Report saved in: "++webDir++"/index.html\n"
+           return ()

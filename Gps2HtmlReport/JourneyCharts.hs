@@ -5,21 +5,10 @@ module Gps2HtmlReport.JourneyCharts where
 
 import Data.GPS
 import Data.Maybe
-import qualified Graphics.Rendering.Cairo as C
-import Graphics.Rendering.Cairo
 import Graphics.Rendering.Chart
-import Graphics.Rendering.Chart.Simple
-import Graphics.Rendering.Chart.Gtk
-import Graphics.Rendering.Chart.Grid
-import System.Environment(getArgs)
-import System.Random
-import Data.Time.LocalTime
 import Data.Accessor
-import Data.Accessor.Tuple
 import Data.Colour
 import Data.Colour.Names
-import Data.Colour.SRGB
-import Text.XML.XSD.DateTime
 
 import Gps2HtmlReport.JourneyStats
 
@@ -45,7 +34,7 @@ speedAndElevationOverTimeChart points otype = toRenderable layout
                                 Left (toPlot avrSpeedLine)  
                               ]
            $ setLayout1Foreground fg
-           $ defaultLayout1
+           defaultLayout1
 
     lineStyle c = line_width ^= 1 * chooseLineWidth otype
                 $ line_color ^= c
@@ -80,12 +69,12 @@ accumDistanceAndElevationChart points otype = toRenderable layout
            $ layout1_background ^= solidFillStyle (opaque white)
            $ layout1_right_axis ^= defaultLayoutAxis { laxis_title_ = "Distance (metres)", laxis_override_ = axisGridHide }
            $ layout1_left_axis ^: laxis_title ^= "Elevation (metres)"
- 	   $ layout1_plots ^= [ Right (toPlot accumDistanceArea),
+           $ layout1_plots ^= [ Right (toPlot accumDistanceArea),
                                 Left (toPlot elevationLine),
                                 Left (toPlot spots)
                               ]
            $ setLayout1Foreground fg
-           $ defaultLayout1
+           defaultLayout1
 
     lineStyle c = line_width ^= 1 * chooseLineWidth otype
                 $ line_color ^= c
@@ -101,25 +90,25 @@ accumDistanceAndElevationChart points otype = toRenderable layout
            $ plot_fillbetween_title ^= "Distance"
            $ defaultPlotFillBetween
 
-    spotMaxPoint = let (a,b) = findPoint points (head points) ele (>)
-                   in (a,b,5::Double)
+    spotMaxPoint = let point = findPoint points (head points) ele (>)
+                   in (if isJust point then Just (fst $ fromJust point, snd $ fromJust point, 5 :: Double) else Nothing)
 
-    spotMinPoint = let (a,b) = findPoint points (head points) ele (<)
-                in (a,b,5::Double)
+    spotMinPoint = let point = findPoint points (head points) ele (<)
+                   in (if isJust point then Just (fst $ fromJust point, snd $ fromJust point, 5 :: Double) else Nothing)
 
     spots = area_spots_title ^= "Altitude"
           $ area_spots_max_radius ^= 5
-          $ area_spots_values ^= [spotMinPoint,spotMaxPoint]
+          $ area_spots_values ^= (if  isJust spotMinPoint && isJust spotMaxPoint then [fromJust spotMinPoint,fromJust spotMaxPoint] else [])
           $ defaultAreaSpots
 
     fg = opaque black
 
 renderToPng :: (t, OutputType -> Renderable a) -> FilePath -> IO (PickFn a)
-renderToPng (n,ir) = renderableToPNGFile (ir Window) 384 288
+renderToPng (_,ir) = renderableToPNGFile (ir Window) 384 288
 
-chart1 :: [WptType] -> ([Char], OutputType -> Renderable ())
+chart1 :: [WptType] -> (String, OutputType -> Renderable ())
 chart1 points = ("speedAndElevationOverTimeChart", speedAndElevationOverTimeChart points)
 
-chart2 :: [WptType] -> ([Char], OutputType -> Renderable ())
+chart2 :: [WptType] -> (String, OutputType -> Renderable ())
 chart2 points = ("accumDistanceAndElevationChart", accumDistanceAndElevationChart points)
 

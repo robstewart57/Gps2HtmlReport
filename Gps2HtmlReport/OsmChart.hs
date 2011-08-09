@@ -28,7 +28,7 @@ resizeImg imgPath img dimensions = do
    savePngFile imgPath resizedImg
        
 -- | Calls the perl `gpx2png' utility to download the relevant OSM tiles
-createOsmMap :: [Char] -> [Char] -> IO [()]
+createOsmMap :: String -> String -> IO [()]
 createOsmMap webDir gpxFile = do
    (_,_,_,pid) <- createProcess (shell ("perl gpx2png/gpx2png.pl -q -o "++webDir++"/osm.png "++ gpxFile))
    waitForProcess pid
@@ -36,5 +36,5 @@ createOsmMap webDir gpxFile = do
    curDir <- getCurrentDirectory
    allFiles <- getDirectoryContents curDir
    let allFilesSplit = map splitExtension allFiles
-   let tmpPngFiles = filter (\(a,b) -> b==".png") allFilesSplit
+   let tmpPngFiles = filter (\(_,b) -> b==".png") allFilesSplit
    mapM (\(a,b) -> removeFile (a++b) ) tmpPngFiles

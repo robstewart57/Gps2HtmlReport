@@ -6,7 +6,7 @@ module Gps2HtmlReport.HTMLGenerator where
 import Text.Html
 import Data.GPS hiding (src,link,href)
 import Text.Printf
-import Data.Time.Clock
+import Data.Maybe
 
 import Gps2HtmlReport.JourneyStats
 
@@ -34,18 +34,21 @@ statsTable points =
        tblHeader2 = th $ stringToHtml "Elevation"
        tblHeader3 = th $ stringToHtml "Speed"
        distTravelled = printf "%.2f" $ journeyDistance points
-       maxElevation = printf "%.1f" $ snd (findPoint points (head points) ele (>))
-       minElevation = printf "%.1f" $ snd (findPoint points (head points) ele (<))
+       maybeMaxElePt = findPoint points (head points) ele (>)
+       maybeMinElePt = findPoint points (head points) ele (<)
+       maxElevation = printf "%.1f" (if isJust maybeMaxElePt then snd $ fromJust maybeMaxElePt else 0.0)
+       minElevation = printf "%.1f" (if isJust maybeMinElePt then snd $ fromJust maybeMinElePt else 0.0)
        meanEle = printf "%.1f" $ meanElevation points
        journeyMins = show $ round (journeyTime points) `div` 60
        journeySecs = show $ round (journeyTime points) `rem` 60
        mxSpd = printf "%.1f" $ maxSpeed points
        meanSpd = printf "%.1f" $ meanJourneySpeed points
-       journeyDate = show $ dateOfJourney points
+       maybeDateOfJourney = dateOfJourney points
+       journeyDate = (if isJust maybeDateOfJourney then show $ fromJust maybeDateOfJourney else "") 
        li1c1 = li $ stringToHtml ("Journey Date: "++ journeyDate)
        li2c1 = li $ stringToHtml ("Distance Travelled: "++ distTravelled++"m")
        li3c1 = li $ stringToHtml ("Journey Time: "++journeyMins++"m "++journeySecs++"s")
-       li1c2 = li $ stringToHtml ("Maximum Elevation: "++maxElevation++"m")
+       li1c2 = li $ stringToHtml ("Maximum Elevation: "++ maxElevation++"m")
        li2c2 = li $ stringToHtml ("Minimum Elevation: "++minElevation++"m")
        li3c2 = li $ stringToHtml ("Mean Elevation: "++ meanEle++"m")
        li1c3 = li $ stringToHtml ("Maximum speed: "++ mxSpd++"m/s")
