@@ -9,7 +9,7 @@ Included in the report:
 * Diagrams charting speed, elevation, accumulated distance etc..
 * OpenStreetMap diagram highlighting the GPS track
 
-A few examples can be seen [HERE](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/).
+An example can be seen [HERE](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/3/index.html).
 
 The Haddock documentation pages can be found [here](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/doc/).
 

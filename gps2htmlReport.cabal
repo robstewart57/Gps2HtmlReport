@@ -2,14 +2,16 @@ Name:                gps2htmlReport
 Version:             0.1
 Cabal-Version:       >=1.2
 Description:         Generate a HTML summary report of GPS tracks
-synopsis:            GPS HTML Report Summary
+synopsis:            GPS to HTML Summary Report
 License:             BSD3
 License-file:        LICENSE
-Extra-Source-Files:  README
 Author:              Rob Stewart <robstewart57@googlemail.com>
 Maintainer:          Rob Stewart <robstewart57@googlemail.com>
+Homepage:	     https://github.com/robstewart57/Gps2HtmlReport
+bug-reports:	     https://github.com/robstewart57/Gps2HtmlReport
 Build-Type:          Simple
-stability:	     Experimental
+stability:	     alpha
+category:	     Data
 extra-source-files:  README.md
 tested-with:         GHC ==7.0.2
 
