@@ -1,6 +1,6 @@
 -- | This module provides the JourneyCharts and HTMLGenerator 
 -- modules with statistics for the charts, and the journey statistics
-module Gps2HtmlReport.JourneyStats where
+module Data.GPS.Gps2HtmlReport.JourneyStats where
 
 import Data.GPS hiding (speed)
 import Data.Maybe

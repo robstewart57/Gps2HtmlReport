@@ -1,14 +1,14 @@
 {-# LANGUAGE ScopedTypeVariables  #-}
 
 -- | The `HTMLGenerator' module generates the HTML content for the index.html generated
-module Gps2HtmlReport.HTMLGenerator where
+module Data.GPS.Gps2HtmlReport.HTMLGenerator where
 
 import Text.Html
 import Data.GPS hiding (src,link,href)
 import Text.Printf
 import Data.Maybe
 
-import Gps2HtmlReport.JourneyStats
+import Data.GPS.Gps2HtmlReport.JourneyStats
 
 -- | Takes all the WayPoints and generates the HTML file
 generateHtmlPage :: [WptType] -> Html

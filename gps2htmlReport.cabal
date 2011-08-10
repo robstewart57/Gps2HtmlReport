@@ -16,9 +16,9 @@ extra-source-files:  README.md
 tested-with:         GHC ==7.0.2
 
 Executable gps2htmlReport
-  Main-is:	       Gps2HtmlReport/Main.hs
+  Main-is:	     Data/GPS/Gps2HtmlReport/Main.hs
 
 library
-  Build-Depends:     base >= 4, html, gps, time, cairo, Chart, random, data-accessor, colour, xsd, filepath, directory, process, gd
+  Build-Depends:     base >= 4 && < 5, html, gps, time, cairo, Chart, random, data-accessor, colour, xsd, filepath, directory, process, gd
   Extensions:        ScopedTypeVariables
-  Exposed-Modules:   Gps2HtmlReport.HTMLGenerator, Gps2HtmlReport.JourneyStats, Gps2HtmlReport.JourneyCharts, Gps2HtmlReport.OsmChart
+  Exposed-Modules:   Data.GPS.Gps2HtmlReport.HTMLGenerator, Data.GPS.Gps2HtmlReport.JourneyStats, Data.GPS.Gps2HtmlReport.JourneyCharts, Data.GPS.Gps2HtmlReport.OsmChart

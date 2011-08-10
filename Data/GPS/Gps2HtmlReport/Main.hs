@@ -5,9 +5,9 @@ import System.FilePath
 import System.Directory
 import Text.Html
 
-import Gps2HtmlReport.OsmChart
-import Gps2HtmlReport.HTMLGenerator
-import Gps2HtmlReport.JourneyCharts
+import Data.GPS.Gps2HtmlReport.OsmChart
+import Data.GPS.Gps2HtmlReport.HTMLGenerator
+import Data.GPS.Gps2HtmlReport.JourneyCharts
 
 -- | Reads the current directory for all .gpx files, then maps to `generateReport' for each one
 main :: IO [()]

@@ -1,7 +1,7 @@
 -- | This module uses the JourneyStats module to generate
 -- the statistics about the journey WayPoints, then
 -- uses the Cairo bindings to generate the charts
-module Gps2HtmlReport.JourneyCharts where
+module Data.GPS.Gps2HtmlReport.JourneyCharts where
 
 import Data.GPS
 import Data.Maybe
@@ -10,7 +10,7 @@ import Data.Accessor
 import Data.Colour
 import Data.Colour.Names
 
-import Gps2HtmlReport.JourneyStats
+import Data.GPS.Gps2HtmlReport.JourneyStats
 
 data OutputType = Window | PNG | PS | PDF | SVG
 

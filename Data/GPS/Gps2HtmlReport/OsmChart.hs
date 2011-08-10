@@ -3,7 +3,7 @@
 -- | This module utilizes the perl gpx2png program
 -- to download the OSM tiles, and the GraphicsMagick bindings
 -- to resize the OSM image if necessary
-module Gps2HtmlReport.OsmChart where
+module Data.GPS.Gps2HtmlReport.OsmChart where
 
 import System.FilePath
 import System.Directory

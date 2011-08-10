@@ -61,6 +61,11 @@ I'd also like to know what is required to make this utility work on non-Linux sy
 
 Either way, get in touch!
 
+To Do
+-----
+
+* It would be great to port the perl `gpx2png' utility to Haskell, eliminating this dependency.
+* This Haskell program currently makes use of elevation, latitude and longitude. There are many other attributes possibly available in WptType. Ideas for what to do with these attributes [here](http://hackage.haskell.org/packages/archive/GPX/0.4.8/doc/html/Data-Geo-GPX-WptType.html#t:WptType) most welcome.
 
 Credits
 -------
