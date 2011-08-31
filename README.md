@@ -65,6 +65,7 @@ To Do
 -----
 
 * This Haskell program currently makes use of elevation, latitude and longitude. There are many other attributes possibly available in WptType. Ideas for what to do with these attributes [here](http://hackage.haskell.org/packages/archive/GPX/0.4.8/doc/html/Data-Geo-GPX-WptType.html#t:WptType) most welcome.
+* Properly attribute copyright of the OSM images to the OSM project as per their [copyright statement](http://wiki.openstreetmap.org/wiki/Legal_FAQ)
 
 Problems
 -----
@@ -77,12 +78,12 @@ can't load .so/.DLL for: stdc++ (libstdc++.so: cannot open shared object file: N
 ... then you are experiencing this bug: [#5289](http://hackage.haskell.org/trac/ghc/ticket/5289).
 
 To fix this
-```
-Fedora 32bit: $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/lib/
-Fedora 64bit: $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/lib/
-Ubunt 32bit:  $#  ln -vs $(gcc --print-file-name=libstdc++.so) /usr/local/lib/
-Ubunt 64bit:  $#  ln -vs $(gcc --print-file-name=libstdc++.so) /usr/local/lib64/
-```
+
+* Fedora 32bit:  $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/lib/
+* Fedora 64bit:  $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/lib64/
+* Ubuntu 32bit:  $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/local/lib/
+* Ubuntu 64bit:  $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/local/lib64/
+
 
 Credits
 -------
