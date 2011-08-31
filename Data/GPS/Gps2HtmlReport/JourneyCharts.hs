@@ -9,6 +9,7 @@ import Graphics.Rendering.Chart
 import Data.Accessor
 import Data.Colour
 import Data.Colour.Names
+import Data.Time.LocalTime
 
 import Data.GPS.Gps2HtmlReport.JourneyStats
 
@@ -35,12 +36,13 @@ speedAndElevationOverTimeChart points otype = toRenderable layout
                               ]
            $ setLayout1Foreground fg
            defaultLayout1
+   
 
     lineStyle c = line_width ^= 1 * chooseLineWidth otype
                 $ line_color ^= c
                 $ defaultPlotLines ^. plot_lines_style
 
-    theSpeeds = [(theTime,spd) | (theTime,spd) <- speedAtPoints points]
+    theSpeeds = [(utcToLocalTime utc theTime,spd) | (theTime,spd) <- avgSpeeds 10 points]
 
     speedLine = plot_lines_style ^= lineStyle (opaque blue)
            $ plot_lines_values ^= [[ (theTime,speed) | (theTime,speed) <- theSpeeds]]
@@ -90,7 +92,7 @@ accumDistanceAndElevationChart points otype = toRenderable layout
            $ plot_fillbetween_title ^= "Distance"
            $ defaultPlotFillBetween
 
-    spotMaxPoint = let point = findPoint points (head points) ele (>)
+    spotMaxPoint = let point = findPoint points (head points) ele (>) 
                    in (if isJust point then Just (fst $ fromJust point, snd $ fromJust point, 5 :: Double) else Nothing)
 
     spotMinPoint = let point = findPoint points (head points) ele (<)

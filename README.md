@@ -24,12 +24,12 @@ cabal configure
 cabal install
 ```
 
-This Haskell program also makes use of the bindings to **GraphcsMagick** and **Cairo**, and so the necessary system packages need to be installed, via a *nix package manager.
+This Haskell program also makes use of the bindings to **GraphcsMagick** and **Cairo**, and so the necessary system packages need to be installed, via a Linux package manager.
 
 On an RPM-based package manager, run this command as root:
 
 ```
-yum install GraphicsMagick cairo
+yum install GraphicsMagick cairo alex happy gtk2hs-buildtools
 ```
 
 Prerequisites
@@ -64,8 +64,25 @@ Either way, get in touch!
 To Do
 -----
 
-* It would be great to port the perl `gpx2png' utility to Haskell, eliminating this dependency.
 * This Haskell program currently makes use of elevation, latitude and longitude. There are many other attributes possibly available in WptType. Ideas for what to do with these attributes [here](http://hackage.haskell.org/packages/archive/GPX/0.4.8/doc/html/Data-Geo-GPX-WptType.html#t:WptType) most welcome.
+
+Problems
+-----
+
+If you receive this error when trying to run the program:
+```
+can't load .so/.DLL for: stdc++ (libstdc++.so: cannot open shared object file: No such file or directory)
+```
+
+... then you are experiencing this bug: [#5289](http://hackage.haskell.org/trac/ghc/ticket/5289).
+
+To fix this
+```
+Fedora 32bit: $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/lib/
+Fedora 64bit: $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/lib/
+Ubunt 32bit:  $#  ln -vs $(gcc --print-file-name=libstdc++.so) /usr/local/lib/
+Ubunt 64bit:  $#  ln -vs $(gcc --print-file-name=libstdc++.so) /usr/local/lib64/
+```
 
 Credits
 -------

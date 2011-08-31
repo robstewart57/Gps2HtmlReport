@@ -1,5 +1,5 @@
 Name:                gps2htmlReport
-Version:             0.1
+Version:             0.2
 Cabal-Version:       >=1.2
 Description:         Generate a HTML summary report of GPS tracks
 synopsis:            GPS to HTML Summary Report
@@ -19,6 +19,6 @@ Executable gps2htmlReport
   Main-is:	     Data/GPS/Gps2HtmlReport/Main.hs
 
 library
-  Build-Depends:     base >= 4 && < 5, html, gps, time, cairo, Chart, random, data-accessor, colour, xsd, filepath, directory, process, gd
+  Build-Depends:     base >= 4 && < 5, html, gps >= 0.7, time, cairo, Chart, random, data-accessor, colour, xsd, filepath, directory, process, gd, bytestring, curl, hsmagick
   Extensions:        ScopedTypeVariables
-  Exposed-Modules:   Data.GPS.Gps2HtmlReport.HTMLGenerator, Data.GPS.Gps2HtmlReport.JourneyStats, Data.GPS.Gps2HtmlReport.JourneyCharts, Data.GPS.Gps2HtmlReport.OsmChart
+  Exposed-Modules:   Data.GPS.Gps2HtmlReport.HTMLGenerator, Data.GPS.Gps2HtmlReport.JourneyStats, Data.GPS.Gps2HtmlReport.JourneyCharts, Data.GPS.Gps2HtmlReport.DrawOsm

@@ -2,7 +2,7 @@
 -- modules with statistics for the charts, and the journey statistics
 module Data.GPS.Gps2HtmlReport.JourneyStats where
 
-import Data.GPS hiding (speed)
+import Data.GPS -- hiding (speed)
 import Data.Maybe
 import Data.Time.LocalTime
 import Data.Time.Clock
@@ -39,7 +39,7 @@ accumDistance [] _ = []
 accumDistance [x] _ = [(lclTime $ fromJust (time x),0.0)]
 accumDistance (x:xs) acc = 
    let dist = distance x (head xs)           
-   in (lclTime $ fromJust (time x), dist + acc ) : accumDistance (tail xs) (dist + acc)
+   in (lclTime $ fromJust (time x), dist + acc ) : accumDistance xs (dist + acc)
 
 -- | Takes all WayPoints, an element in wptType, and an Eq function, returning a single WayPoint
 findPoint :: [WptType] -> WptType -> (WptType -> Maybe Double) -> (Double -> Double -> Bool) -> Maybe (LocalTime,Double)
@@ -95,13 +95,3 @@ lclTime dteTime = utcToLocalTime dfltTZ (Text.XML.XSD.DateTime.toUTCTime dteTime
 
 dfltTZ :: TimeZone
 dfltTZ = TimeZone {timeZoneMinutes=0,timeZoneSummerOnly=False,timeZoneName="GMT"}
-
--- | Overides the `speed' function in the `gps' package
-speed :: (Lat loc, Lon loc, Time loc) => loc -> loc -> Maybe Speed
-speed a b = 
-	case (getUTCTime b, getUTCTime a) of
-		(Just x, Just y) -> Just $ distance a b / realToFrac (diffUTCTime x y) 
-		_ -> Nothing
-
-getUTCTime :: (Lat a, Lon a, Time a) => a -> Maybe UTCTime
-getUTCTime = fmap toUTCTime . time

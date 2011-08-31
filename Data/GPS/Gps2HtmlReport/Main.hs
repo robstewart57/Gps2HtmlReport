@@ -5,9 +5,11 @@ import System.FilePath
 import System.Directory
 import Text.Html
 
-import Data.GPS.Gps2HtmlReport.OsmChart
 import Data.GPS.Gps2HtmlReport.HTMLGenerator
 import Data.GPS.Gps2HtmlReport.JourneyCharts
+import Data.GPS.Gps2HtmlReport.DrawOsm
+
+
 
 -- | Reads the current directory for all .gpx files, then maps to `generateReport' for each one
 main :: IO [()]
@@ -31,11 +33,13 @@ generateReport webDir gpxFile  = do
          points <- readGPX gpxFile
          case length points of
           0 -> putStr "Unable to parse GPX file. Skipping..."
-          otherwise -> do
+          _ -> do
            createEmptyDir webDir
+           putStr "Generating statistical charts...\n"
            renderToPng (chart1 points) (webDir++"/chart1.png")
            renderToPng (chart2 points) (webDir++"/chart2.png")
            writeFile (webDir++"/index.html") $ renderHtml $ generateHtmlPage points
-           createOsmMap webDir gpxFile
+           putStr "Downloading OpenStreetMap tiles...\n"
+           generateOsmMap webDir points
            putStr $ "Processing '"++gpxFile++"' complete. Report saved in: "++webDir++"/index.html\n"
            return ()
