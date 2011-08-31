@@ -43,12 +43,12 @@ The program will search for all files ending in ".gpx", and for each one, genera
 ```
 $ cd $location_of_gpx_files
 $ ls
-1.gpx 2.gpx 3.gpx
+1.gpx
 $ gps2HtmlReport
-Processing 3 file(s)...
-Processing '1.gpx' complete. Report saved in: /home/foo/gps_tracks/1/index.html
-Processing '2.gpx' complete. Report saved in: /home/foo/gps_tracks/2/index.html
-Processing '3.gpx' complete. Report saved in: /home/foo/gps_tracks/3/index.html
+Processing 1 file(s)...
+Generating statistical charts...
+Downloading OpenStreetMap tiles...
+Processing '1.gpx' complete. Report saved in: /home/foo/bar/1/index.html
 ```
 
 Notes
@@ -87,6 +87,5 @@ To fix this
 
 Credits
 -------
-Thanks goes to the developers of the [gpx2png project](http://wiki.openstreetmap.org/wiki/Gpx2png), which is used to generate the OpenStreetMap image.
 
-In addition, thanks to [Thomas DuBuisson](http://www.haskellers.com/user/TomMD), for implementing the `gps' package and contributing it to Hackage.
+Thanks to [Thomas DuBuisson](http://www.haskellers.com/user/TomMD), for implementing the `gps' package and contributing it to Hackage.
