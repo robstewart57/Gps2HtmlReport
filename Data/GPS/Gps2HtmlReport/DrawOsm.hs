@@ -6,7 +6,7 @@ import Prelude
 import Data.GPS
 import Data.ByteString.Char8 hiding (head)
 import Graphics.Transform.Magick.Types hiding (Image)
-import Network.Curl
+import Network.Curl.Download
 import Data.Bits
 import Graphics.GD
 import Data.Maybe
@@ -75,9 +75,10 @@ rectangle x' y' = Rectangle {width=256, height=256, x = x'*256, y = y'*256}
 
 downloadFile :: String -> IO Image
 downloadFile url = do
-              response <- curlGetString url []
-              let imgBlob::ByteString = pack $ snd response
-              loadPngByteString imgBlob
+  response <- openURI url
+  case response of
+    Left err  -> error err
+    Right img -> loadPngByteString img
 
 makeOSMLayer :: TileCoords -> IO Image
 makeOSMLayer tCoords = do
@@ -124,8 +125,8 @@ drawLines [_] _ img = return img
 drawLines (wpt:wpts) tCoord img = do
        let start = pixelPosForCoord [wpt] tCoord
            end = pixelPosForCoord [head wpts] tCoord
-           minEle = snd $ fromJust $ findPoint wpts wpt ele (<)
-           maxEle = snd $ fromJust $ findPoint wpts wpt ele (>)
+           minEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (<)
+           maxEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (>)
        drawLine' start end img (minEle,fromJust $ ele wpt,maxEle) 0
        drawLines wpts tCoord img
 
