@@ -58,7 +58,7 @@ journeyDistance (point:points) = distance point (head points) + journeyDistance 
 
 -- | Calculates the average speed of the journey
 meanJourneySpeed :: (Lat a, Lon a) => [a] -> Distance
-meanJourneySpeed points = journeyDistance points / fromIntegral (length points)
+meanJourneySpeed points = journeyDistance points / totalDistance points
 
 -- | Calculates the maximum speed
 maxSpeed :: [WptType] -> Speed
