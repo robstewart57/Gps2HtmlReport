@@ -33,7 +33,7 @@ tileNumber latitude longitude =
 
 secant a = 1 / cos a
 
-initCoords = TileCoords {minX = 1000000, maxX = 0, minY = 1000000, maxY = 0}
+initCoords = TileCoords {minX = 1000000, maxX = -1000, minY = 1000000, maxY = -1000}
 
 determineTiles :: [WptType] -> TileCoords -> TileCoords
 determineTiles [] _ = initCoords
