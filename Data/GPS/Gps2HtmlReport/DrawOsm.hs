@@ -125,8 +125,8 @@ drawLines [_] _ img = return img
 drawLines (wpt:wpts) tCoord img = do
        let start = pixelPosForCoord [wpt] tCoord
            end = pixelPosForCoord [head wpts] tCoord
-           minEle = snd $ fromJust $ findPoint wpts wpt ele (<)
-           maxEle = snd $ fromJust $ findPoint wpts wpt ele (>)
+           minEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (<)
+           maxEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (>)
        drawLine' start end img (minEle,fromJust $ ele wpt,maxEle) 0
        drawLines wpts tCoord img
 
