@@ -154,7 +154,7 @@ drawLines (wpt:wpts) tCoord img = do
            end = pixelPosForCoord [head wpts] tCoord
            minEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (<)
            maxEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (>)
-       drawLine' start end img (minEle,fromJust $ ele wpt,maxEle) 0
+       drawLine' start end img (minEle,fromMaybe 0 $ ele wpt,maxEle) 0
        drawLines wpts tCoord img
 
 -- | This is a fix on the fact that the 'drawLine' function
