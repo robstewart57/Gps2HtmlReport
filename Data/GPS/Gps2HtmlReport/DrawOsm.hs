@@ -3,7 +3,9 @@ module Data.GPS.Gps2HtmlReport.DrawOsm where
 
 import Prelude
 import Data.GPS
-import Graphics.Transform.Magick.Types hiding (Image)
+import qualified Data.ByteString.Char8 as B
+import Data.ByteString.Char8 (ByteString)
+import Graphics.Transform.Magick.Types hiding (Image, minimum, maximum)
 import Network.Curl.Download
 import Data.Bits
 import Graphics.GD
@@ -22,12 +24,21 @@ data TileCoords = TileCoords { minX :: Int
                      , maxY :: Int 
                      } 
 
-tileNumber :: Double -> Double -> (Int,Int)
-tileNumber latitude longitude = 
-             let xtile = round $ ((longitude+180) / 360) * fromInteger (shift (1::Integer) zoom)
+
+tileNumbers :: Double -> Double -> [(Int,Int)]
+tileNumbers latitude longitude = 
+             let xtile = ((longitude+180) / 360) * fromInteger (shift (1::Integer) zoom)
                  tmp = log (tan (latitude*pi / 180) + secant (latitude * pi / 180))
-                 ytile = round $ ((1-tmp / pi) / 2.0) * fromInteger (shift (1::Integer) zoom)
-             in (xtile,ytile)
+                 ytile = ((1-tmp / pi) / 2.0) * fromInteger (shift (1::Integer) zoom)
+                 bounds x = [ceiling x, floor x]
+             in [(xt,yt) | xt <- bounds xtile, yt <- bounds ytile]
+
+maxTile :: [(Int,Int)] -> (Int,Int)
+maxTile [] = error "There is no max tile of an empty list"
+maxTile (x:xs) = go x xs
+  where
+    go a [] = a
+    go a (y:ys) = if fst y >= fst a && snd y >= snd a then go y ys else go a ys
 
 secant a = 1 / cos a
 
@@ -42,11 +53,11 @@ determineTiles [wpt] tCoords =
            curMaxX = maxX tCoords
            curMinY = minY tCoords
            curMaxY = maxY tCoords
-           tile = tileNumber (value (lat wpt)) (value (lon wpt))
-           newMaxX = max curMaxX (fst tile)
-           newMinX = min curMinX (fst tile)
-           newMaxY = max curMaxY (snd tile)
-           newMinY = min curMinY (snd tile) 
+           tiles = tileNumbers (value (lat wpt)) (value (lon wpt))
+           newMaxX = maximum $ curMaxX : (map fst tiles)
+           newMinX = minimum $ curMinX : (map fst tiles)
+           newMaxY = maximum $ curMaxY : (map snd tiles)
+           newMinY = minimum $ curMinY : (map snd tiles) 
        in tCoords {minX = newMinX, maxX = newMaxX, minY = newMinY, maxY = newMaxY}
 
 determineTiles (wpt:wpts) tCoords = 
@@ -125,7 +136,7 @@ pixelPosForCoord [] _ = (0,0)
 pixelPosForCoord [wpt] tCoord =
              let lat' = value $ lat wpt
                  lon' = value $ lon wpt
-                 tile = tileNumber lat' lon'
+                 tile = maxTile $ tileNumbers lat' lon'
                  xoffset = (fst tile - minX tCoord) * 256
                  yoffset = (snd tile - minY tCoord) * 256
                  (south,west,north,east) = (uncurry project tile)
