@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables  #-}
 
 -- | The `HTMLGenerator' module generates the HTML content for the index.html generated
 module Data.GPS.Gps2HtmlReport.HTMLGenerator where

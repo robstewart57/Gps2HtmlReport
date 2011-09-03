@@ -65,7 +65,6 @@ To Do
 -----
 
 * This Haskell program currently makes use of elevation, latitude and longitude. There are many other attributes possibly available in WptType. Ideas for what to do with these attributes [here](http://hackage.haskell.org/packages/archive/GPX/0.4.8/doc/html/Data-Geo-GPX-WptType.html#t:WptType) most welcome.
-* Properly attribute copyright of the OSM images to the OSM project as per their [copyright statement](http://wiki.openstreetmap.org/wiki/Legal_FAQ)
 
 Problems
 -----

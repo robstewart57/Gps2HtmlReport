@@ -1,10 +1,8 @@
-{-# LANGUAGE ScopedTypeVariables  #-}
 
 module Data.GPS.Gps2HtmlReport.DrawOsm where
 
 import Prelude
 import Data.GPS
-import Data.ByteString.Char8 hiding (head)
 import Graphics.Transform.Magick.Types hiding (Image)
 import Network.Curl.Download
 import Data.Bits
@@ -27,7 +25,7 @@ data TileCoords = TileCoords { minX :: Int
 tileNumber :: Double -> Double -> (Int,Int)
 tileNumber latitude longitude = 
              let xtile = round $ ((longitude+180) / 360) * fromInteger (shift (1::Integer) zoom)
-                 tmp::Double = log (tan (latitude*pi / 180) + secant (latitude * pi / 180))
+                 tmp = log (tan (latitude*pi / 180) + secant (latitude * pi / 180))
                  ytile = round $ ((1-tmp / pi) / 2.0) * fromInteger (shift (1::Integer) zoom)
              in (xtile,ytile)
 
@@ -35,6 +33,8 @@ secant a = 1 / cos a
 
 initCoords = TileCoords {minX = 1000000, maxX = -1000, minY = 1000000, maxY = -1000}
 
+-- | Determines the minimum and maximum of the X and Y tiles
+-- to be downloaded from OSM
 determineTiles :: [WptType] -> TileCoords -> TileCoords
 determineTiles [] _ = initCoords
 determineTiles [wpt] tCoords =
@@ -59,6 +59,9 @@ deltaLat tCoords = maxX tCoords - minX tCoords
 deltaLong :: TileCoords -> Int
 deltaLong tCoords = maxY tCoords - minY tCoords
 
+-- | Takes the boundaries of the OSM tiles, and generates
+-- [(Int,Int)] containing a list of all OSM tiles that
+-- need downloading
 selectedTiles :: TileCoords -> [(Int,Int)]
 selectedTiles tCoords = 
          let minx = minX tCoords
@@ -67,12 +70,15 @@ selectedTiles tCoords =
              maxy = maxY tCoords
          in [(i,j) | i <- [minx..maxx], j <- [miny..maxy]]
        
+-- | Formats the filename string
 filenameStr xTile yTile = tilesprefix ++ tilesourcename ++ "-z"++show zoom++"-x"++show xTile++"-y"++show yTile++".png"
 
+-- | Formats the URL string
 urlStr xTile yTile = baseurl ++"/"++show zoom++"/"++show xTile++"/"++show yTile++".png"
 
 rectangle x' y' = Rectangle {width=256, height=256, x = x'*256, y = y'*256}
 
+-- | Takes the URL of a given OSM tile and uses curl to download it
 downloadFile :: String -> IO Image
 downloadFile url = do
   response <- openURI url
@@ -80,18 +86,24 @@ downloadFile url = do
     Left err  -> error err
     Right img -> loadPngByteString img
 
+-- | Takes the boundaries of the OSM tiles covering the
+-- the 'Trail', uses 'placeTile' to download the tile
+-- and to place each tile on the background layer
 makeOSMLayer :: TileCoords -> IO Image
 makeOSMLayer tCoords = do
-        backgroundImg <- newImage ((maxX tCoords - minX tCoords)*256,(maxY tCoords - minY tCoords)*256)
+        backgroundImg <- newImage (((maxX tCoords - minX tCoords)+1)*256,((maxY tCoords - minY tCoords)+1)*256)
         mapM_ (\(a,b) -> placeTile a b backgroundImg tCoords) (selectedTiles tCoords)
         return backgroundImg
 
+-- | Used to create a mosaic of all downloaded OSM tiles to generate
+-- the background layer for plotting the @Trail@ onto the @Image@
 placeTile x y backgroundImg tCoords = do
           img <- downloadFile $ urlStr x y
           copyRegion (0,0) (256,256) img (256*(x-minX tCoords),256*(y-minY tCoords)) backgroundImg
 
 projectMercToLat rely = (180 / pi) * atan (sinh rely)
 
+-- | Used by @pixelPosForCoord@ for N,S,E,W coordinates for (x,y) values
 project :: Int -> Int -> (Double,Double,Double,Double)
 project x y = 
   let unit = 1.0 / (2.0 ** fromIntegral zoom)
@@ -107,6 +119,8 @@ project x y =
       long1 = (-180.0) + fromIntegral x * unit'
   in (lat2,long1,lat1,long1+unit') -- S,W,N,E
   
+-- | Takes a WptType, and the OSM tile boundaries
+-- and generates (x,y) points to be placed on the @Image@
 pixelPosForCoord [] _ = (0,0)
 pixelPosForCoord [wpt] tCoord =
              let lat' = value $ lat wpt
@@ -119,6 +133,8 @@ pixelPosForCoord [wpt] tCoord =
                  y = round $ (lat' - north) * 256.0 / (south - north) + fromIntegral yoffset
              in (x,y)
 
+-- | Takes the 'WptType' and draws lines between every
+-- point to point connection in the 'Trail'
 drawLines :: [WptType] -> TileCoords -> Image -> IO Image
 drawLines [] _ img = return img
 drawLines [_] _ img = return img
@@ -130,7 +146,7 @@ drawLines (wpt:wpts) tCoord img = do
        drawLine' start end img (minEle,fromJust $ ele wpt,maxEle) 0
        drawLines wpts tCoord img
 
--- | This is a fix on the fact that the @drawLine@ function
+-- | This is a fix on the fact that the 'drawLine' function
 -- provided by the GD bindings do not provid a `width' parameter
 drawLine' :: Point -> Point -> Image -> (Double,Double,Double) -> Int -> IO ()
 drawLine' start end img (minEle,ele',maxEle) i
@@ -141,8 +157,20 @@ drawLine' start end img (minEle,ele',maxEle) i
            x'' = x' / range
            color' = lineColor $ round $ 255.0*x''
 
-
+-- | Uses a sliding scale for the red value in the RGB Color
+-- to show a sliding color from green to yellow in accordance
+-- with the relative elevation of a given WptType in the Trail
 lineColor redVal = rgb redVal 255 0
+
+-- | Adds the copyright text in accordance with
+-- http://wiki.openstreetmap.org/wiki/Legal_FAQ
+addCopyright img = do
+         size <- imageSize img
+         let copyrightS = "Tile images © OpenStreetMap (and) contributors, CC-BY-SA"
+             pos = (10,snd size-10)
+             black = rgb 0 0 0
+         useFontConfig True
+         drawString "monospace" 6.0 0.0 pos copyrightS black img
 
 -- | If the generated OSM image has a greater width than 800 pixels, it is scaled to have a width of 800 pixels.
 fitToWidth :: Image -> IO Image
@@ -158,9 +186,14 @@ resizeImg img dimensions = do
        height = round (fromIntegral (snd dimensions) / resizeRatio)
    resizeImage 800 height img
 
+-- | Takes the destination directory for the web content,
+-- the (Trail WptType), and uses the DrawOsm functions
+-- to generate an `osm.png' file showing the trail.
 generateOsmMap webDir points = do
   let tiles = determineTiles points initCoords
   backgroundImg <- makeOSMLayer tiles
+  tmpImg <- imageSize backgroundImg
   imgWithLines <- drawLines points tiles backgroundImg
   resizedImg <- fitToWidth imgWithLines
+  addCopyright resizedImg
   savePngFile (webDir++"/osm.png") resizedImg
