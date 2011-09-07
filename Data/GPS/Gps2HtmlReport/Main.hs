@@ -63,9 +63,7 @@ processGps fullReport = do
    let allFilesSplit = map splitExtension allFiles
    let gpxFiles = filter (\(_,b) -> b==".gpx") allFilesSplit
    putStr ("Processing "++show (length gpxFiles)++" file(s)...\n")
-   if fullReport
-     then mapM (\(a,b) -> generateReport (curDir++"/"++a) (a++b)) gpxFiles
-     else mapM (\(a,b) -> generateImgOnly (curDir++"/"++a) (a++b)) gpxFiles
+   mapM (\(a,b) -> generateReport (curDir++"/"++a) (a++b) fullReport) gpxFiles
 
 -- | Creates empty directory for each web report
 createEmptyDir :: FilePath -> IO ()
@@ -73,32 +71,28 @@ createEmptyDir dir = do
        exists <- doesDirectoryExist dir
        (if exists then removeDirectoryRecursive dir >> createDirectory dir else createDirectory dir)
 
--- | Generates the HTML report for each .gpx file
-generateReport :: FilePath -> FilePath -> IO ()
-generateReport webDir gpxFile  = do
+-- | Generates the HTML report for each .gpx file,
+-- or simply an osm.png file if the '--imageonly' argument
+-- is used
+generateReport :: FilePath -> FilePath -> Bool -> IO ()
+generateReport webDir gpxFile fullReport = do
          points <- readGPX gpxFile
          case length points of
           0 -> putStr "Unable to parse GPX file. Skipping..."
           _ -> do
            createEmptyDir webDir
-           putStr "Generating statistical charts...\n"
-           renderToPng (chart1 points) (webDir++"/chart1.png")
-           renderToPng (chart2 points) (webDir++"/chart2.png")
-           writeFile (webDir++"/index.html") $ renderHtml $ generateHtmlPage points
-           putStr "Downloading OpenStreetMap tiles...\n"
-           generateOsmMap webDir points
-           putStr $ "Processing '"++gpxFile++"' complete. Report saved in: "++webDir++"/index.html\n"
-           return ()
-
--- | Generates the HTML report for each .gpx file
-generateImgOnly :: FilePath -> FilePath -> IO ()
-generateImgOnly webDir gpxFile  = do
-         points <- readGPX gpxFile
-         case length points of
-          0 -> putStr "Unable to parse GPX file. Skipping..."
-          _ -> do
-           createEmptyDir webDir
-           putStr "Downloading OpenStreetMap tiles...\n"
-           generateOsmMap webDir points
-           putStr $ "Processing '"++gpxFile++"' complete. Image saved in: "++webDir++"/osm.png\n"
+           case fullReport
+             of
+              True -> do
+               putStr "Generating statistical charts...\n" 
+               renderToPng (chart1 points) (webDir++"/chart1.png")
+               renderToPng (chart2 points) (webDir++"/chart2.png")
+               writeFile (webDir++"/index.html") (renderHtml $ generateHtmlPage points)
+               putStr "Downloading OpenStreetMap tiles...\n"
+               generateOsmMap webDir points
+               putStr $ "Processing '"++gpxFile++"' complete. Report saved in: "++webDir++"/index.html\n"
+              _ -> do
+               putStr "Downloading OpenStreetMap tiles...\n"
+               generateOsmMap webDir points
+               putStr $ "Processing '"++gpxFile++"' complete. Image saved in: "++webDir++"/osm.png\n"
            return ()
