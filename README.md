@@ -11,7 +11,7 @@ Included in the report:
 
 An example can be seen [HERE](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/3/index.html).
 
-The Haddock documentation pages can be found [here](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/doc/).
+The hackage page is [here](http://hackage.haskell.org/package/gps2htmlReport).
 
 Installation
 ------------
