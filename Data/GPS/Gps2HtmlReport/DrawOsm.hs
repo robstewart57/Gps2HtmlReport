@@ -183,11 +183,11 @@ drawLines (wpt:wpts) tCoord img zoom = do
 -- provided by the GD bindings do not provid a `width' parameter
 drawLine' :: Point -> Point -> Image -> (Double,Double,Double) -> Int -> IO ()
 drawLine' start end img (minEle,ele',maxEle) i
-      | i < 6 = do
-    drawLine (fst start+(i-1),snd start-(i-1)) (fst end+(i-1),snd end-(i-1)) color' img
-    drawLine (fst start+(i+1),snd start-(i-1)) (fst end+(i+1),snd end-(i-1)) color' img
-    drawLine (fst start+(i+1),snd start-(i+1)) (fst end+(i+1),snd end-(i+1)) color' img
-    drawLine (fst start+(i-1),snd start-(i+1)) (fst end+(i-1),snd end-(i+1)) color' img
+      | i < 4 = do
+    drawLine (fst start+(i-2),snd start-(i-2)) (fst end+(i-2),snd end-(i-2)) color' img
+    drawLine (fst start+(i+2),snd start-(i-2)) (fst end+(i+2),snd end-(i-2)) color' img
+    drawLine (fst start+(i+2),snd start-(i+2)) (fst end+(i+2),snd end-(i+2)) color' img
+    drawLine (fst start+(i-2),snd start-(i+2)) (fst end+(i-2),snd end-(i+2)) color' img
     drawLine' start end img (minEle,ele',maxEle) (i+1)
       | otherwise = return ()
      where range = maxEle - minEle
