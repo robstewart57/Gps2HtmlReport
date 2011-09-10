@@ -11,7 +11,7 @@ Included in the report:
 
 An example can be seen [HERE](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/3/index.html).
 
-The Haddock documentation pages can be found [here](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/doc/).
+The hackage page is [here](http://hackage.haskell.org/package/gps2htmlReport).
 
 Installation
 ------------
@@ -51,6 +51,16 @@ Downloading OpenStreetMap tiles...
 Processing '1.gpx' complete. Report saved in: /home/foo/bar/1/index.html
 ```
 
+Alternatively, you can you this program to simply generate an image of your track on top of an OpenStreetMap layer.
+
+```
+$ gps2htmlReport --imageonly
+Processing 1 file(s)...
+Downloading OpenStreetMap tiles...
+Processing '1.gpx' complete. Image saved in: /home/foo/bar/1/osm.png
+```
+
+
 Notes
 -----
 This project requires testing!
@@ -61,10 +71,6 @@ I'd also like to know what is required to make this utility work on non-Linux sy
 
 Either way, get in touch!
 
-To Do
------
-
-* This Haskell program currently makes use of elevation, latitude and longitude. There are many other attributes possibly available in WptType. Ideas for what to do with these attributes [here](http://hackage.haskell.org/packages/archive/GPX/0.4.8/doc/html/Data-Geo-GPX-WptType.html#t:WptType) most welcome.
 
 Problems
 -----

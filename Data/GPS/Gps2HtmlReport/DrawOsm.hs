@@ -3,8 +3,6 @@ module Data.GPS.Gps2HtmlReport.DrawOsm where
 
 import Prelude
 import Data.GPS
-import qualified Data.ByteString.Char8 as B
-import Data.ByteString.Char8 (ByteString)
 import Graphics.Transform.Magick.Types hiding (Image, minimum, maximum)
 import Network.Curl.Download
 import Data.Bits
@@ -16,7 +14,7 @@ import Data.GPS.Gps2HtmlReport.JourneyStats
 baseurl = "http://tile.openstreetmap.org"
 tilesprefix = "tile"
 tilesourcename = "osmrender"
-zoom = 16::Int
+-- zoom = 16::Int
 
 data TileCoords = TileCoords { minX :: Int
                      , maxX :: Int  
@@ -25,8 +23,8 @@ data TileCoords = TileCoords { minX :: Int
                      } 
 
 
-tileNumbers :: Double -> Double -> [(Int,Int)]
-tileNumbers latitude longitude = 
+tileNumbers :: Double -> Double -> Int -> [(Int,Int)]
+tileNumbers latitude longitude zoom = 
              let xtile = ((longitude+180) / 360) * fromInteger (shift (1::Integer) zoom)
                  tmp = log (tan (latitude*pi / 180) + secant (latitude * pi / 180))
                  ytile = ((1-tmp / pi) / 2.0) * fromInteger (shift (1::Integer) zoom)
@@ -40,35 +38,53 @@ maxTile (x:xs) = go x xs
     go a [] = a
     go a (y:ys) = if fst y >= fst a && snd y >= snd a then go y ys else go a ys
 
+secant :: Floating a => a -> a
 secant a = 1 / cos a
 
+initCoords :: TileCoords
 initCoords = TileCoords {minX = 1000000, maxX = -1000, minY = 1000000, maxY = -1000}
 
 -- | Determines the minimum and maximum of the X and Y tiles
 -- to be downloaded from OSM
-determineTiles :: [WptType] -> TileCoords -> TileCoords
-determineTiles [] _ = initCoords
-determineTiles [wpt] tCoords =
+determineTiles :: [WptType] -> TileCoords -> Int -> TileCoords
+determineTiles [] _ _ = initCoords
+determineTiles [wpt] tCoords zoom =
        let curMinX = minX tCoords
            curMaxX = maxX tCoords
            curMinY = minY tCoords
            curMaxY = maxY tCoords
-           tiles = tileNumbers (value (lat wpt)) (value (lon wpt))
-           newMaxX = maximum $ curMaxX : (map fst tiles)
-           newMinX = minimum $ curMinX : (map fst tiles)
-           newMaxY = maximum $ curMaxY : (map snd tiles)
-           newMinY = minimum $ curMinY : (map snd tiles) 
+           tiles = tileNumbers (value (lat wpt)) (value (lon wpt)) zoom
+           newMaxX = maximum $ curMaxX : map fst tiles
+           newMinX = minimum $ curMinX : map fst tiles
+           newMaxY = maximum $ curMaxY : map snd tiles
+           newMinY = minimum $ curMinY : map snd tiles 
        in tCoords {minX = newMinX, maxX = newMaxX, minY = newMinY, maxY = newMaxY}
 
-determineTiles (wpt:wpts) tCoords = 
-       let tileScope = determineTiles [wpt] tCoords
-       in determineTiles wpts tileScope
+determineTiles (wpt:wpts) tCoords zoom = 
+       let tileScope = determineTiles [wpt] tCoords zoom
+       in determineTiles wpts tileScope zoom
 
 deltaLat :: TileCoords -> Int
 deltaLat tCoords = maxX tCoords - minX tCoords
 
 deltaLong :: TileCoords -> Int
 deltaLong tCoords = maxY tCoords - minY tCoords
+
+maxNumAutoTiles = 32
+
+zoom :: TileCoords -> Int
+zoom = zoomCalc
+
+zoomCalc :: TileCoords -> Int
+zoomCalc tCoords = 
+   let numxtiles = maxX tCoords - minX tCoords + 1
+       numytiles = maxY tCoords - minY tCoords + 1
+       div = getZoomDiv numxtiles numytiles 0
+   in 16 - div
+
+getZoomDiv x y i
+   | (x+1)*(y+1) > maxNumAutoTiles = getZoomDiv (shiftR x 1) (shiftR y 1) (i+1)
+   | otherwise = i
 
 -- | Takes the boundaries of the OSM tiles, and generates
 -- [(Int,Int)] containing a list of all OSM tiles that
@@ -82,11 +98,14 @@ selectedTiles tCoords =
          in [(i,j) | i <- [minx..maxx], j <- [miny..maxy]]
        
 -- | Formats the filename string
+filenameStr :: (Show a, Show a1) => a -> a1 -> String
 filenameStr xTile yTile = tilesprefix ++ tilesourcename ++ "-z"++show zoom++"-x"++show xTile++"-y"++show yTile++".png"
 
 -- | Formats the URL string
-urlStr xTile yTile = baseurl ++"/"++show zoom++"/"++show xTile++"/"++show yTile++".png"
+urlStr xTile yTile zoom = baseurl ++"/"++show zoom++"/"++show xTile++"/"++show yTile++".png"
 
+
+rectangle :: Int -> Int -> Graphics.Transform.Magick.Types.Rectangle
 rectangle x' y' = Rectangle {width=256, height=256, x = x'*256, y = y'*256}
 
 -- | Takes the URL of a given OSM tile and uses curl to download it
@@ -100,23 +119,25 @@ downloadFile url = do
 -- | Takes the boundaries of the OSM tiles covering the
 -- the 'Trail', uses 'placeTile' to download the tile
 -- and to place each tile on the background layer
-makeOSMLayer :: TileCoords -> IO Image
-makeOSMLayer tCoords = do
+makeOSMLayer :: TileCoords -> Int -> IO Image
+makeOSMLayer tCoords zoom = do
         backgroundImg <- newImage (((maxX tCoords - minX tCoords)+1)*256,((maxY tCoords - minY tCoords)+1)*256)
-        mapM_ (\(a,b) -> placeTile a b backgroundImg tCoords) (selectedTiles tCoords)
+        mapM_ (\(a,b) -> placeTile a b backgroundImg tCoords zoom) (selectedTiles tCoords)
         return backgroundImg
 
 -- | Used to create a mosaic of all downloaded OSM tiles to generate
--- the background layer for plotting the @Trail@ onto the @Image@
-placeTile x y backgroundImg tCoords = do
-          img <- downloadFile $ urlStr x y
+-- the background layer for plotting the 'Trail' onto the 'Image'
+placeTile :: Int -> Int -> Graphics.GD.Image -> TileCoords -> Int -> IO ()
+placeTile x y backgroundImg tCoords zoom = do
+          img <- downloadFile $ urlStr x y zoom
           copyRegion (0,0) (256,256) img (256*(x-minX tCoords),256*(y-minY tCoords)) backgroundImg
 
+projectMercToLat :: Floating a => a -> a
 projectMercToLat rely = (180 / pi) * atan (sinh rely)
 
 -- | Used by @pixelPosForCoord@ for N,S,E,W coordinates for (x,y) values
-project :: Int -> Int -> (Double,Double,Double,Double)
-project x y = 
+project :: Int -> Int -> Int -> (Double,Double,Double,Double)
+project x y zoom = 
   let unit = 1.0 / (2.0 ** fromIntegral zoom)
       rely1 = fromIntegral y * unit
       rely2 = rely1 + unit
@@ -131,37 +152,43 @@ project x y =
   in (lat2,long1,lat1,long1+unit') -- S,W,N,E
   
 -- | Takes a WptType, and the OSM tile boundaries
--- and generates (x,y) points to be placed on the @Image@
-pixelPosForCoord [] _ = (0,0)
-pixelPosForCoord [wpt] tCoord =
+-- and generates (x,y) points to be placed on the 'Image'
+pixelPosForCoord :: (Lon a, Lat a, Integral t, Integral t1) => [a] -> TileCoords -> Int -> (t, t1)
+pixelPosForCoord [] _ _ = (0,0)
+pixelPosForCoord [wpt] tCoord zoom =
              let lat' = value $ lat wpt
                  lon' = value $ lon wpt
-                 tile = maxTile $ tileNumbers lat' lon'
+                 tile = maxTile $ tileNumbers lat' lon' zoom
                  xoffset = (fst tile - minX tCoord) * 256
                  yoffset = (snd tile - minY tCoord) * 256
-                 (south,west,north,east) = (uncurry project tile)
+                 (south,west,north,east) = (uncurry project tile zoom)
                  x = round $ (lon' - west) * 256.0 / (east - west) + fromIntegral xoffset
                  y = round $ (lat' - north) * 256.0 / (south - north) + fromIntegral yoffset
              in (x,y)
 
 -- | Takes the 'WptType' and draws lines between every
 -- point to point connection in the 'Trail'
-drawLines :: [WptType] -> TileCoords -> Image -> IO Image
-drawLines [] _ img = return img
-drawLines [_] _ img = return img
-drawLines (wpt:wpts) tCoord img = do
-       let start = pixelPosForCoord [wpt] tCoord
-           end = pixelPosForCoord [head wpts] tCoord
+drawLines :: [WptType] -> TileCoords -> Image -> Int -> IO Image
+drawLines [] _ img _ = return img
+drawLines [_] _ img _ = return img
+drawLines (wpt:wpts) tCoord img zoom = do
+       let start = pixelPosForCoord [wpt] tCoord zoom
+           end = pixelPosForCoord [head wpts] tCoord zoom
            minEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (<)
            maxEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (>)
        drawLine' start end img (minEle,fromMaybe 0 $ ele wpt,maxEle) 0
-       drawLines wpts tCoord img
+       drawLines wpts tCoord img zoom
 
 -- | This is a fix on the fact that the 'drawLine' function
 -- provided by the GD bindings do not provid a `width' parameter
 drawLine' :: Point -> Point -> Image -> (Double,Double,Double) -> Int -> IO ()
 drawLine' start end img (minEle,ele',maxEle) i
-      | i < 6 = drawLine (fst start+(i-3),snd start-(i-3)) (fst end+(i-3),snd end-(i-3)) color' img >> drawLine' start end img (minEle,ele',maxEle) (i+1)
+      | i < 4 = do
+    drawLine (fst start+(i-2),snd start-(i-2)) (fst end+(i-2),snd end-(i-2)) color' img
+    drawLine (fst start+(i+2),snd start-(i-2)) (fst end+(i+2),snd end-(i-2)) color' img
+    drawLine (fst start+(i+2),snd start-(i+2)) (fst end+(i+2),snd end-(i+2)) color' img
+    drawLine (fst start+(i-2),snd start-(i+2)) (fst end+(i-2),snd end-(i+2)) color' img
+    drawLine' start end img (minEle,ele',maxEle) (i+1)
       | otherwise = return ()
      where range = maxEle - minEle
            x' = ele' - minEle
@@ -171,10 +198,12 @@ drawLine' start end img (minEle,ele',maxEle) i
 -- | Uses a sliding scale for the red value in the RGB Color
 -- to show a sliding color from green to yellow in accordance
 -- with the relative elevation of a given WptType in the Trail
+lineColor :: Int -> Graphics.GD.Color
 lineColor redVal = rgb redVal 255 0
 
 -- | Adds the copyright text in accordance with
 -- http://wiki.openstreetmap.org/wiki/Legal_FAQ
+addCopyright :: Graphics.GD.Image -> IO (Graphics.GD.Point, Graphics.GD.Point, Graphics.GD.Point, Graphics.GD.Point)
 addCopyright img = do
          size <- imageSize img
          let copyrightS = "Tile images © OpenStreetMap (and) contributors, CC-BY-SA"
@@ -200,11 +229,13 @@ resizeImg img dimensions = do
 -- | Takes the destination directory for the web content,
 -- the (Trail WptType), and uses the DrawOsm functions
 -- to generate an `osm.png' file showing the trail.
+generateOsmMap :: String -> [WptType] -> IO ()
 generateOsmMap webDir points = do
-  let tiles = determineTiles points initCoords
-  backgroundImg <- makeOSMLayer tiles
-  tmpImg <- imageSize backgroundImg
-  imgWithLines <- drawLines points tiles backgroundImg
+  let tiles = determineTiles points initCoords 16
+      zoom = zoomCalc tiles
+      tiles' = determineTiles points initCoords zoom
+  backgroundImg <- makeOSMLayer tiles' zoom
+  imgWithLines <- drawLines points tiles' backgroundImg zoom
   resizedImg <- fitToWidth imgWithLines
   addCopyright resizedImg
   savePngFile (webDir++"/osm.png") resizedImg
