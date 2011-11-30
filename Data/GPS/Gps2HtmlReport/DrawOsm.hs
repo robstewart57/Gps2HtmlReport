@@ -4,7 +4,10 @@ module Data.GPS.Gps2HtmlReport.DrawOsm where
 import Prelude
 import Data.GPS
 import Graphics.Transform.Magick.Types hiding (Image, minimum, maximum)
-import Network.Curl.Download
+import Network.HTTP.Enumerator
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as L
+import Control.Monad
 import Data.Bits
 import Graphics.GD
 import Data.Maybe
@@ -111,10 +114,8 @@ rectangle x' y' = Rectangle {width=256, height=256, x = x'*256, y = y'*256}
 -- | Takes the URL of a given OSM tile and uses curl to download it
 downloadFile :: String -> IO Image
 downloadFile url = do
-  response <- openURI url
-  case response of
-    Left err  -> error err
-    Right img -> loadPngByteString img
+  response <- liftM (B.concat . L.toChunks) (simpleHttp url)
+  loadPngByteString response
 
 -- | Takes the boundaries of the OSM tiles covering the
 -- the 'Trail', uses 'placeTile' to download the tile
