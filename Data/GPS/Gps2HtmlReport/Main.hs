@@ -33,7 +33,7 @@ getOpts = cmdArgs $ myProgOpts
     &= program _PROGRAM_NAME
 
 _PROGRAM_NAME = "gps2HtmlReport"
-_PROGRAM_VERSION = "0.2"
+_PROGRAM_VERSION = "0.2.1"
 _PROGRAM_INFO = _PROGRAM_NAME ++ " version " ++ _PROGRAM_VERSION
 _PROGRAM_ABOUT = "A Haskell utility to generate HTML page reports of GPS Tracks and Track overlays on OpenStreetMap tiles"
 _COPYRIGHT = "(C) Rob Stewart 2011"
