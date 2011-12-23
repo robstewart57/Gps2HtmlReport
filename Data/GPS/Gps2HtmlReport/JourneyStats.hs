@@ -30,7 +30,7 @@ speedAtPoints' prev [x]
          | isJust (time x) = [(lclTime $ fromJust (time x), fromJust $ speed prev x)]
          | otherwise = []
 speedAtPoints' prev (x:xs)
-         | isJust (time x) = (lclTime $ fromJust (time x), fromJust $ speed prev x) : speedAtPoints' x xs
+         | isJust (time x) && isJust (speed prev x) = (lclTime $ fromJust (time x), fromJust $ speed prev x) : speedAtPoints' x xs
          | otherwise = [] ++ speedAtPoints' x xs
 
 -- | Takes all WayPoints, and creates a list of tuples containing (TimeStamp,JourneyDistanceAtPoint)
@@ -78,8 +78,8 @@ meanElevation points =
 
 -- | Calculates the total journey time
 journeyTime :: Time a => [a] -> NominalDiffTime
-journeyTime [] = fromInteger 0
-journeyTime [_] = fromInteger 0
+journeyTime [] = 0
+journeyTime [_] = 0
 journeyTime (point:points) = 
              let startTime = toUTCTime (fromJust (time point))
                  endTime = toUTCTime (fromJust (time $ last points))

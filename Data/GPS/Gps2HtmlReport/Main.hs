@@ -69,7 +69,7 @@ processGps fullReport = do
 createEmptyDir :: FilePath -> IO ()
 createEmptyDir dir = do
        exists <- doesDirectoryExist dir
-       (if exists then removeDirectoryRecursive dir >> createDirectory dir else createDirectory dir)
+       if exists then removeDirectoryRecursive dir >> createDirectory dir else createDirectory dir
 
 -- | Generates the HTML report for each .gpx file,
 -- or simply an osm.png file if the '--imageonly' argument
@@ -81,9 +81,7 @@ generateReport webDir gpxFile fullReport = do
           0 -> putStr "Unable to parse GPX file. Skipping..."
           _ -> do
            createEmptyDir webDir
-           case fullReport
-             of
-              True -> do
+           if fullReport then do
                putStr "Generating statistical charts...\n" 
                renderToPng (chart1 points) (webDir++"/chart1.png")
                renderToPng (chart2 points) (webDir++"/chart2.png")
@@ -91,8 +89,7 @@ generateReport webDir gpxFile fullReport = do
                putStr "Downloading OpenStreetMap tiles...\n"
                generateOsmMap webDir points
                putStr $ "Processing '"++gpxFile++"' complete. Report saved in: "++webDir++"/index.html\n"
-              _ -> do
+              else do
                putStr "Downloading OpenStreetMap tiles...\n"
                generateOsmMap webDir points
                putStr $ "Processing '"++gpxFile++"' complete. Image saved in: "++webDir++"/osm.png\n"
-           return ()
