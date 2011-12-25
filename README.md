@@ -15,21 +15,24 @@ The hackage page is [here](http://hackage.haskell.org/package/gps2htmlReport).
 
 Installation
 ------------
-A user first of all needs to install the Haskell Platform. For
+A user first of all needs to install the Haskell Platform, and a few additional system packages - **GraphcsMagick** and **Cairo** . For
 exmaple, on an RPM-based machine, as root:
+
 ```
-># yum install haskell-platform
+># yum install haskell-platform GraphicsMagick cairo gtk2hs-buildtools
 ```
 
 
-The **recommended** way to install the `gps2HtmlReport' program, is to
-grab it via http://hackage.haskell.org:
+The **recommended** way to install the gps2HtmlReport program, is to
+grab it via hackage:
+
 ```
 cabal update
 cabal install gps2htmlReport
 ```
 
 Or to install the version in the github repository:
+
 ```
 git clone git://github.com/robstewart57/Gps2HtmlReport.git
 cd Gps2HtmlReport
@@ -38,26 +41,18 @@ cabal configure
 cabal install
 ```
 
-This Haskell program also makes use of the bindings to
-**GraphcsMagick** and **Cairo**, and so the necessary system packages
-need to be installed, via a Linux package manager.
-
-On an RPM-based package manager, run this command as root:
-```
-># yum install GraphicsMagick cairo gtk2hs-buildtools
-```
-
 Prerequisites
 -------------
 First of all, you need to have your GPS date in a GPX file. There are
 many gpx exporters available. I use my Android phone to take GPX
 tracks, with a great application,
 [OSMTracker](https://code.google.com/p/osmtracker-android/). This
-application allows you to export your GPS tracks to GPX.
+application allows you to export your GPS tracks to GPX. I am sure that there are plenty of good applications for iOS to perform the same function. And I'm aware that GPS devices allow .gpx files to be extracted from GPS logs.
 
 Usage
 -----
 The program will search for all files ending in ".gpx", and for each one, generate a HTML report.
+
 ```
 $ cd $location_of_gpx_files
 $ ls
@@ -84,6 +79,7 @@ Problems
 -----
 
 If you receive this error when trying to run the program:
+
 ```
 can't load .so/.DLL for: stdc++ (libstdc++.so: cannot open shared object file: No such file or directory)
 ```
