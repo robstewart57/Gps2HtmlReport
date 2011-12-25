@@ -9,67 +9,75 @@ Included in the report:
 * Diagrams charting speed, elevation, accumulated distance etc..
 * OpenStreetMap diagram highlighting the GPS track
 
-An example can be seen [HERE](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/3/index.html).
+An example can be seen [here](http://www.macs.hw.ac.uk/~rs46/gps2htmlreport/3/index.html).
 
 The hackage page is [here](http://hackage.haskell.org/package/gps2htmlReport).
 
 Installation
 ------------
-It is assumed that you have the Haskell Platform installed.
-
-Just run these commands to configure and install the `gps2HtmlReport' utility, run these commands:
-
+A user first of all needs to install the Haskell Platform. For
+exmaple, on an RPM-based machine, as root:
 ```
+># yum install haskell-platform
+```
+
+
+The **recommended** way to install the `gps2HtmlReport' program, is to
+grab it via http://hackage.haskell.org:
+```
+cabal update
+cabal install gps2htmlReport
+```
+
+Or to install the version in the github repository:
+```
+git clone git://github.com/robstewart57/Gps2HtmlReport.git
+cd Gps2HtmlReport
+cabal update
 cabal configure
 cabal install
 ```
 
-This Haskell program also makes use of the bindings to **GraphcsMagick** and **Cairo**, and so the necessary system packages need to be installed, via a Linux package manager.
+This Haskell program also makes use of the bindings to
+**GraphcsMagick** and **Cairo**, and so the necessary system packages
+need to be installed, via a Linux package manager.
 
 On an RPM-based package manager, run this command as root:
-
 ```
-yum install GraphicsMagick cairo alex happy gtk2hs-buildtools
+># yum install GraphicsMagick cairo gtk2hs-buildtools
 ```
 
 Prerequisites
 -------------
-First of all, you need to have your GPS date in a GPX file. There are many gpx exporters available. I use my Android phone to take GPX tracks, with a great application, [OSMTracker](https://code.google.com/p/osmtracker-android/). This application allows you to export your GPS tracks to GPX.
+First of all, you need to have your GPS date in a GPX file. There are
+many gpx exporters available. I use my Android phone to take GPX
+tracks, with a great application,
+[OSMTracker](https://code.google.com/p/osmtracker-android/). This
+application allows you to export your GPS tracks to GPX.
 
 Usage
 -----
 The program will search for all files ending in ".gpx", and for each one, generate a HTML report.
-
 ```
 $ cd $location_of_gpx_files
 $ ls
 1.gpx
-$ gps2HtmlReport
-Processing 1 file(s)...
-Generating statistical charts...
-Downloading OpenStreetMap tiles...
-Processing '1.gpx' complete. Report saved in: /home/foo/bar/1/index.html
+$ gps2HtmlReport --help
+
+gps2HtmlReport [OPTIONS]
+  A Haskell utility to generate HTML page reports of GPS Tracks and Track
+  overlays on OpenStreetMap tiles
+
+Common flags:
+  -i --imageonly  Generates only an image of the track overlay on an
+                  OpenStreetMap layer
+  -a --archive    Produce tar archive for web and image files
+     --hashnames  Create reports in hashed directory names
+  -h --help       Display help message
+  -v --version    Print version information
+  -V --Verbose    Loud verbosity
+  -q --quiet      Quiet verbosity
 ```
-
-Alternatively, you can you this program to simply generate an image of your track on top of an OpenStreetMap layer.
-
-```
-$ gps2htmlReport --imageonly
-Processing 1 file(s)...
-Downloading OpenStreetMap tiles...
-Processing '1.gpx' complete. Image saved in: /home/foo/bar/1/osm.png
-```
-
-
-Notes
------
-This project requires testing!
-
-If you are able to use the utility to generate HTML reports, then I'd like to hear suggestions for improvements. If you are **unable** to run it, then I **really** want to hear from you. What the problem is; How far did you get; or better still, send me the .gpx file.
-
-I'd also like to know what is required to make this utility work on non-Linux systems. This has been tested on a Fedora Linux machine. Does it work on Mac OSX? Windows? What needs doing to run it on other Linux distro's?
-
-Either way, get in touch!
 
 
 Problems
@@ -89,6 +97,8 @@ To fix this
 * Ubuntu 32bit:  $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/local/lib/
 * Ubuntu 64bit:  $# ln -vs $(gcc --print-file-name=libstdc++.so) /usr/local/lib64/
 
+If you experience other problems, please let me know - and preferrably
+sending me the problematic .gpx file.
 
 Credits
 -------

@@ -26,7 +26,7 @@ generateHtmlPage points =
 
 -- | The OpenStreetMap image area
 osmImg :: Html
-osmImg = center $ image ! [src "osm.png"]
+osmImg = anchor (image ! [src "osm.png"]) ! [href "osm_fullsize.png"]
 
 -- | Takes all the WayPoints and calculates the journey statistics
 statsTable :: [WptType] -> Html

@@ -217,6 +217,7 @@ generateOsmMap webDir points = do
   img <- makeOSMLayer tiles' zoom
   lineImg  <- newImage (5,5)
   drawLines points tiles' img lineImg zoom
-  fitToWidth img
-  addCopyright img
-  savePngFile (webDir++"/osm.png") img
+  savePngFile (webDir++"/osm_fullsize.png") img
+  img' <- fitToWidth img
+  addCopyright img'
+  savePngFile (webDir++"/osm.png") img'
