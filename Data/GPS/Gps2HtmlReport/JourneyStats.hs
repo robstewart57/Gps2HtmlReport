@@ -1,8 +1,19 @@
 -- | This module provides the JourneyCharts and HTMLGenerator 
 -- modules with statistics for the charts, and the journey statistics
-module Data.GPS.Gps2HtmlReport.JourneyStats where
+module Data.GPS.Gps2HtmlReport.JourneyStats (
+  ptsElevation,     -- :: [WptType] -> [(LocalTime,Double)]
+  avrSpeedOverTime, -- :: [(LocalTime,Speed)] -> Double -> Double -> [(LocalTime,Speed)] -> [(LocalTime,Speed)]
+  accumDistance,    -- :: [WptType] -> Double -> [(LocalTime,Distance)]
+  findPoint,        -- findPoint :: [WptType] -> WptType -> (WptType -> Maybe Double) -> (Double -> Double -> Bool) -> Maybe (LocalTime,Double)
+  journeyDistance,  -- :: (Lat a, Lon a) => [a] -> Distance
+  meanElevation,    -- :: Ele a => [a] -> Double
+  journeyTime,      -- :: Time a => [a] -> NominalDiffTime
+  maxSpeed,         -- :: [WptType] -> Speed
+  meanJourneySpeed, -- :: (Lat a, Lon a, Time a) => [a] -> Distance
+  dateOfJourney     -- :: Time a => [a] -> Maybe Day
+  ) where
 
-import Data.GPS -- hiding (speed)
+import Data.GPS
 import Data.Maybe
 import Data.Time.LocalTime
 import Data.Time.Clock

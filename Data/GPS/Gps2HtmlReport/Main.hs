@@ -9,9 +9,9 @@ import System.Directory
 import Text.Html hiding (name)
 import System.Console.CmdArgs
 
-import Data.GPS.Gps2HtmlReport.HTMLGenerator
-import Data.GPS.Gps2HtmlReport.JourneyCharts
-import Data.GPS.Gps2HtmlReport.DrawOsm
+import Data.GPS.Gps2HtmlReport.HTMLGenerator (generateHtmlPage)
+import Data.GPS.Gps2HtmlReport.JourneyCharts (renderToPng,chart1,chart2)
+import Data.GPS.Gps2HtmlReport.DrawOsm (generateOsmMap)
 
 data MyOptions = MyOptions
     { imageOnly :: Bool

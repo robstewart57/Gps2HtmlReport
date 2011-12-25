@@ -1,7 +1,11 @@
 -- | This module uses the JourneyStats module to generate
 -- the statistics about the journey WayPoints, then
 -- uses the Cairo bindings to generate the charts
-module Data.GPS.Gps2HtmlReport.JourneyCharts where
+module Data.GPS.Gps2HtmlReport.JourneyCharts (
+  renderToPng, -- :: (t, OutputType -> Renderable a) -> FilePath -> IO (PickFn a)
+  chart1, -- :: [WptType] -> (String, OutputType -> Renderable ())
+  chart2 -- :: [WptType] -> (String, OutputType -> Renderable ())
+  )where
 
 import Data.GPS
 import Data.Maybe
@@ -11,7 +15,7 @@ import Data.Colour
 import Data.Colour.Names
 import Data.Time.LocalTime
 
-import Data.GPS.Gps2HtmlReport.JourneyStats
+import Data.GPS.Gps2HtmlReport.JourneyStats (ptsElevation,avrSpeedOverTime,accumDistance,findPoint)
 
 data OutputType = Window | PNG | PS | PDF | SVG
 

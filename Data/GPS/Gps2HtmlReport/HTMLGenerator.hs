@@ -1,13 +1,15 @@
 
 -- | The `HTMLGenerator' module generates the HTML content for the index.html generated
-module Data.GPS.Gps2HtmlReport.HTMLGenerator where
+module Data.GPS.Gps2HtmlReport.HTMLGenerator (
+  generateHtmlPage -- :: [WptType] -> Html
+  ) where
 
 import Text.Html
 import Data.GPS hiding (src,link,href)
 import Text.Printf
 import Data.Maybe
 
-import Data.GPS.Gps2HtmlReport.JourneyStats
+import Data.GPS.Gps2HtmlReport.JourneyStats (journeyDistance,meanElevation,journeyTime,maxSpeed,meanJourneySpeed,findPoint,dateOfJourney)
 
 -- | Takes all the WayPoints and generates the HTML file
 generateHtmlPage :: [WptType] -> Html
@@ -18,7 +20,7 @@ generateHtmlPage points =
        title = thetitle $ stringToHtml "GPX Track Report"
        theStyle = style (stringToHtml cssContent) ! [thetype "text/css"]
        theHeader = header $ concatHtml [title,theStyle]
-       mainArea = thediv (concatHtml [header1,statsTable points,br,header2,chartTable,header3,osmImg]) -- ! [identifier "main"]
+       mainArea = thediv (concatHtml [header1,statsTable points,br,header2,chartTable,header3,osmImg])
        theBody = body mainArea
    in concatHtml [theHeader,theBody,pgFooter]
 

@@ -1,9 +1,10 @@
 
-module Data.GPS.Gps2HtmlReport.DrawOsm where
+module Data.GPS.Gps2HtmlReport.DrawOsm (
+  generateOsmMap -- :: String -> [WptType] -> IO ()
+  ) where
 
 import Prelude
 import Data.GPS
-import Graphics.Transform.Magick.Types hiding (Image, minimum, maximum)
 import Network.HTTP.Enumerator
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
@@ -15,16 +16,12 @@ import Data.Maybe
 import Data.GPS.Gps2HtmlReport.JourneyStats
 
 baseurl = "http://tile.openstreetmap.org"
-tilesprefix = "tile"
-tilesourcename = "osmrender"
--- zoom = 16::Int
 
 data TileCoords = TileCoords { minX :: Int
                      , maxX :: Int  
                      , minY :: Int  
                      , maxY :: Int 
                      } 
-
 
 tileNumbers :: Double -> Double -> Int -> [(Int,Int)]
 tileNumbers latitude longitude zoom = 
@@ -67,16 +64,7 @@ determineTiles (wpt:wpts) tCoords zoom =
        let tileScope = determineTiles [wpt] tCoords zoom
        in determineTiles wpts tileScope zoom
 
-deltaLat :: TileCoords -> Int
-deltaLat tCoords = maxX tCoords - minX tCoords
-
-deltaLong :: TileCoords -> Int
-deltaLong tCoords = maxY tCoords - minY tCoords
-
 maxNumAutoTiles = 32
-
-zoom :: TileCoords -> Int
-zoom = zoomCalc
 
 zoomCalc :: TileCoords -> Int
 zoomCalc tCoords = 
@@ -100,16 +88,10 @@ selectedTiles tCoords =
              maxy = maxY tCoords
          in [(i,j) | i <- [minx..maxx], j <- [miny..maxy]]
        
--- | Formats the filename string
-filenameStr :: (Show a, Show a1) => a -> a1 -> String
-filenameStr xTile yTile = tilesprefix ++ tilesourcename ++ "-z"++show zoom++"-x"++show xTile++"-y"++show yTile++".png"
 
 -- | Formats the URL string
 urlStr xTile yTile zoom = baseurl ++"/"++show zoom++"/"++show xTile++"/"++show yTile++".png"
 
-
-rectangle :: Int -> Int -> Graphics.Transform.Magick.Types.Rectangle
-rectangle x' y' = Rectangle {width=256, height=256, x = x'*256, y = y'*256}
 
 -- | Takes the URL of a given OSM tile and uses curl to download it
 downloadFile :: String -> IO Image
@@ -167,34 +149,31 @@ pixelPosForCoord [wpt] tCoord zoom =
                  y = round $ (lat' - north) * 256.0 / (south - north) + fromIntegral yoffset
              in (x,y)
 
+
 -- | Takes the 'WptType' and draws lines between every
 -- point to point connection in the 'Trail'
-drawLines :: [WptType] -> TileCoords -> Image -> Int -> IO Image
-drawLines [] _ img _ = return img
-drawLines [_] _ img _ = return img
-drawLines (wpt:wpts) tCoord img zoom = do
+drawLines :: [WptType] -> TileCoords -> Image -> Image -> Int -> IO ()
+drawLines [] _ _ _ _ = return ()
+drawLines [_] _ _ _ _ = return ()
+drawLines (wpt:wpts) tCoord img lineImg zoom = do
        let start = pixelPosForCoord [wpt] tCoord zoom
            end = pixelPosForCoord [head wpts] tCoord zoom
            minEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (<)
            maxEle = fromMaybe 0 $ fmap snd $ findPoint wpts wpt ele (>)
-       drawLine' start end img (minEle,fromMaybe 0 $ ele wpt,maxEle) 0
-       drawLines wpts tCoord img zoom
+       drawLine' start end img lineImg (minEle,fromMaybe 0 $ ele wpt,maxEle)
+       drawLines wpts tCoord img lineImg zoom
 
--- | This is a fix on the fact that the 'drawLine' function
--- provided by the GD bindings do not provid a `width' parameter
-drawLine' :: Point -> Point -> Image -> (Double,Double,Double) -> Int -> IO ()
-drawLine' start end img (minEle,ele',maxEle) i
-      | i < 4 = do
-    drawLine (fst start+(i-2),snd start-(i-2)) (fst end+(i-2),snd end-(i-2)) color' img
-    drawLine (fst start+(i+2),snd start-(i-2)) (fst end+(i+2),snd end-(i-2)) color' img
-    drawLine (fst start+(i+2),snd start-(i+2)) (fst end+(i+2),snd end-(i+2)) color' img
-    drawLine (fst start+(i-2),snd start-(i+2)) (fst end+(i-2),snd end-(i+2)) color' img
-    drawLine' start end img (minEle,ele',maxEle) (i+1)
-      | otherwise = return ()
-     where range = maxEle - minEle
-           x' = ele' - minEle
-           x'' = x' / range
-           color' = lineColor $ round $ 255.0*x''
+-- | Sets the colour for a single line segment in the track,
+--   and 
+drawLine' :: Point -> Point -> Image -> Image -> (Double,Double,Double) -> IO ()
+drawLine' start end img lineImg (minEle,ele',maxEle) = do
+   fillImage color lineImg
+   setBrush img lineImg
+   drawLine (fst start,snd start) (fst end,snd end) (unPCREOption brushed) img
+   where range = maxEle - minEle
+         x' = ele' - minEle
+         x'' = x' / range
+         color = lineColor $ round $ 255.0*x''
 
 -- | Uses a sliding scale for the red value in the RGB Color
 -- to show a sliding color from green to yellow in accordance
@@ -235,8 +214,9 @@ generateOsmMap webDir points = do
   let tiles = determineTiles points initCoords 16
       zoom = zoomCalc tiles
       tiles' = determineTiles points initCoords zoom
-  backgroundImg <- makeOSMLayer tiles' zoom
-  imgWithLines <- drawLines points tiles' backgroundImg zoom
-  resizedImg <- fitToWidth imgWithLines
-  addCopyright resizedImg
-  savePngFile (webDir++"/osm.png") resizedImg
+  img <- makeOSMLayer tiles' zoom
+  lineImg  <- newImage (5,5)
+  drawLines points tiles' img lineImg zoom
+  fitToWidth img
+  addCopyright img
+  savePngFile (webDir++"/osm.png") img
