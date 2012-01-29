@@ -63,7 +63,9 @@ statsTable points =
    in center tbl
    
 -- | The CSS style text to format the rendering of the HTML page. It would be good to replace with Haskell HTML combinator library functions
-cssContent = "h1 {font-size: 22px;color: #335577;font-weight: bold; margin-top: 20px;margin-left: 70px;font-family: New Century Schoolbook, serif;} div {    width: 900px; margin-top: 50px; margin:0 auto;} table {border-spacing: 20px 0px;} footer {text-align:right; background-color:#EEEEEE; width:900px; margin:0 auto; margin-top: 30px}"
+
+cssContent = "h1 {color: #2C558A; font-weight: normal; font-size: x-large; text-shadow: white 0px 1px 1px; letter-spacing: 0.1em; font-family: 'Gill Sans', 'PT Sans', 'Arial', sans-serif; text-transform: uppercase;} div {    width: 900px; margin-top: 50px; margin:0 auto;} table {border-spacing: 20px 0px;} footer {text-align:right; background-color:#EEEEEE; width:900px; margin:0 auto; margin-top: 30px}"
+
 
 -- | The area holding the Cairo charts
 chartTable = 
